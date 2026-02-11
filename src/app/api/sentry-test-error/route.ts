@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
+import { sentryMetrics } from "@/lib/sentry-utils";
 
 export async function GET() {
   try {
@@ -10,7 +11,7 @@ export async function GET() {
     });
 
     // Track test endpoint usage
-    Sentry.metrics.increment('test.api_called', 1, {
+    sentryMetrics.increment('test.api_called', 1, {
       tags: { endpoint: 'sentry-test-error' }
     });
 
@@ -23,7 +24,7 @@ export async function GET() {
     });
 
     // Track test error metric
-    Sentry.metrics.increment('test.error_thrown', 1, {
+    sentryMetrics.increment('test.error_thrown', 1, {
       tags: { type: 'server_side' }
     });
 

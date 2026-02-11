@@ -1,5 +1,6 @@
 import { query } from '@anthropic-ai/claude-agent-sdk'
 import * as Sentry from '@sentry/nextjs'
+import { sentryMetrics } from '@/lib/sentry-utils'
 
 const SYSTEM_PROMPT = `You are a helpful personal assistant designed to help with general research, questions, and tasks.
 
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     })
 
     // Track chat request metric
-    Sentry.metrics.increment('chat.request', 1)
+    sentryMetrics.increment('chat.request', 1)
 
     const { messages } = await request.json() as { messages: MessageInput[] }
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
         message: 'Invalid request: messages array missing',
         level: 'warning'
       })
-      Sentry.metrics.increment('chat.error', 1, {
+      sentryMetrics.increment('chat.error', 1, {
         tags: { errorType: 'invalid_messages' }
       })
       return new Response(
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
         message: 'Invalid request: no user message found',
         level: 'warning'
       })
-      Sentry.metrics.increment('chat.error', 1, {
+      sentryMetrics.increment('chat.error', 1, {
         tags: { errorType: 'no_user_message' }
       })
       return new Response(
@@ -81,8 +82,8 @@ export async function POST(request: Request) {
     })
 
     // Track message metrics
-    Sentry.metrics.gauge('chat.message_length', lastUserMessage.content.length)
-    Sentry.metrics.gauge('chat.conversation_length', messages.length)
+    sentryMetrics.gauge('chat.message_length', lastUserMessage.content.length)
+    sentryMetrics.gauge('chat.conversation_length', messages.length)
 
     // Build conversation context
     const conversationContext = messages
@@ -141,7 +142,7 @@ export async function POST(request: Request) {
                     })
 
                     // Track tool usage metric
-                    Sentry.metrics.increment('chat.tool_used', 1, {
+                    sentryMetrics.increment('chat.tool_used', 1, {
                       tags: { toolName: block.name }
                     })
 
@@ -172,8 +173,8 @@ export async function POST(request: Request) {
               })
 
               // Track success and duration
-              Sentry.metrics.increment('chat.success', 1)
-              Sentry.metrics.distribution('chat.duration', duration)
+              sentryMetrics.increment('chat.success', 1)
+              sentryMetrics.distribution('chat.duration', duration)
 
               controller.enqueue(encoder.encode(
                 `data: ${JSON.stringify({ type: 'done' })}\n\n`
@@ -189,7 +190,7 @@ export async function POST(request: Request) {
                 data: { subtype: message.subtype }
               })
 
-              Sentry.metrics.increment('chat.error', 1, {
+              sentryMetrics.increment('chat.error', 1, {
                 tags: { errorType: 'query_failed' }
               })
 
@@ -208,7 +209,7 @@ export async function POST(request: Request) {
             tags: { component: 'chat_stream' }
           })
 
-          Sentry.metrics.increment('chat.error', 1, {
+          sentryMetrics.increment('chat.error', 1, {
             tags: { errorType: 'stream_error' }
           })
 
@@ -234,7 +235,7 @@ export async function POST(request: Request) {
       tags: { component: 'chat_api' }
     })
 
-    Sentry.metrics.increment('chat.error', 1, {
+    sentryMetrics.increment('chat.error', 1, {
       tags: { errorType: 'api_error' }
     })
 

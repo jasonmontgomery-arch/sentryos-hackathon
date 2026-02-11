@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { sentryMetrics } from '@/lib/sentry-utils'
 
 const Desktop = dynamic(
   () => import('@/components/desktop/Desktop').then(mod => mod.Desktop),
@@ -26,13 +27,13 @@ export default function Home() {
     })
 
     // Track page load metric
-    Sentry.metrics.increment('page.loaded', 1, {
+    sentryMetrics.increment('page.loaded', 1, {
       tags: { page: 'desktop' }
     })
 
     // Track page load time
     const loadTime = performance.now()
-    Sentry.metrics.distribution('page.load_time', loadTime, {
+    sentryMetrics.distribution('page.load_time', loadTime, {
       tags: { page: 'desktop' }
     })
   }, [])

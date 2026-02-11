@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { sentryMetrics } from '@/lib/sentry-utils'
 import { Send, Bot, User, Loader2, Wrench, Search, Globe, FileText, Terminal } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -91,7 +92,7 @@ export function Chat() {
     })
 
     // Track chat message metric
-    Sentry.metrics.increment('chat.ui.message_sent', 1)
+    sentryMetrics.increment('chat.ui.message_sent', 1)
 
     setMessages(prev => [...prev, userMessage])
     setInput('')

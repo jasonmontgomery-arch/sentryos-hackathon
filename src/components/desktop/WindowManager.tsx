@@ -2,6 +2,7 @@
 
 import { useState, useCallback, createContext, useContext, ReactNode } from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { sentryMetrics } from '@/lib/sentry-utils'
 import { WindowState } from './types'
 
 interface WindowManagerContextType {
@@ -44,7 +45,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
     })
 
     // Track window open metric
-    Sentry.metrics.increment('window.opened', 1, {
+    sentryMetrics.increment('window.opened', 1, {
       tags: { windowTitle: window.title }
     })
 
@@ -78,7 +79,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         }
 
         // Track total window count
-        Sentry.metrics.gauge('window.count', prev.length + 1)
+        sentryMetrics.gauge('window.count', prev.length + 1)
 
         return [
           ...prev.map(w => ({ ...w, isFocused: false })),
@@ -101,12 +102,12 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         })
 
         // Track window close metric
-        Sentry.metrics.increment('window.closed', 1, {
+        sentryMetrics.increment('window.closed', 1, {
           tags: { windowTitle: window.title }
         })
 
         // Update window count gauge
-        Sentry.metrics.gauge('window.count', prev.length - 1)
+        sentryMetrics.gauge('window.count', prev.length - 1)
       }
       return prev.filter(w => w.id !== id)
     })
@@ -124,7 +125,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         })
 
         // Track minimize action
-        Sentry.metrics.increment('window.minimized', 1)
+        sentryMetrics.increment('window.minimized', 1)
       }
       return prev.map(w =>
         w.id === id ? { ...w, isMinimized: true, isFocused: false } : w
@@ -145,7 +146,7 @@ export function WindowManagerProvider({ children }: { children: ReactNode }) {
         })
 
         // Track maximize/restore action
-        Sentry.metrics.increment(`window.${action}d`, 1)
+        sentryMetrics.increment(`window.${action}d`, 1)
       }
       return prev.map(w =>
         w.id === id ? { ...w, isMaximized: !w.isMaximized } : w
