@@ -4,21 +4,53 @@ import * as Sentry from "@sentry/nextjs";
 
 export default function SentryTestPage() {
   const throwClientError = () => {
+    Sentry.addBreadcrumb({
+      category: 'test',
+      message: 'User clicked: Throw Client Error',
+      level: 'info'
+    });
+    Sentry.metrics.increment('test.button_clicked', 1, {
+      tags: { button: 'client_error' }
+    });
     throw new Error("This is a test client-side error from Sentry test page");
   };
 
   const throwServerError = async () => {
+    Sentry.addBreadcrumb({
+      category: 'test',
+      message: 'User clicked: Throw Server Error',
+      level: 'info'
+    });
+    Sentry.metrics.increment('test.button_clicked', 1, {
+      tags: { button: 'server_error' }
+    });
     const response = await fetch("/api/sentry-test-error");
     const data = await response.json();
     console.log(data);
   };
 
   const captureMessage = () => {
+    Sentry.addBreadcrumb({
+      category: 'test',
+      message: 'User clicked: Send Test Message',
+      level: 'info'
+    });
+    Sentry.metrics.increment('test.button_clicked', 1, {
+      tags: { button: 'message' }
+    });
     Sentry.captureMessage("Test message from Sentry test page", "info");
     alert("Message sent to Sentry! Check your Sentry dashboard.");
   };
 
   const captureException = () => {
+    Sentry.addBreadcrumb({
+      category: 'test',
+      message: 'User clicked: Capture Test Exception',
+      level: 'info'
+    });
+    Sentry.metrics.increment('test.button_clicked', 1, {
+      tags: { button: 'exception' }
+    });
     try {
       throw new Error("Test exception captured manually");
     } catch (error) {

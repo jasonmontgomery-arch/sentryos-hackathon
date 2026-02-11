@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { Send, Bot, User, Loader2, Wrench, Search, Globe, FileText, Terminal } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -77,6 +78,20 @@ export function Chat() {
       content: input.trim(),
       timestamp: new Date()
     }
+
+    // Log chat message
+    Sentry.addBreadcrumb({
+      category: 'chat.ui',
+      message: 'User sent chat message',
+      level: 'info',
+      data: {
+        messageLength: userMessage.content.length,
+        conversationLength: messages.length
+      }
+    })
+
+    // Track chat message metric
+    Sentry.metrics.increment('chat.ui.message_sent', 1)
 
     setMessages(prev => [...prev, userMessage])
     setInput('')
